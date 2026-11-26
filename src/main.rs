@@ -31,7 +31,7 @@ impl App {
 
     pub fn new() -> Self {
         Self {
-            dir_path: PathBuf::from("C:\\Users\\norder\\Documents\\Images\\Nord\\"),
+            dir_path: PathBuf::from("C:\\"),
         }
     }
 
