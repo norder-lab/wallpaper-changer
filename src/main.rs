@@ -1,16 +1,20 @@
 use std::env;
 use std::fs;
-use std::path::{PathBuf, absolute};
+use std::fs::File;
 use std::io;
+use std::io::BufReader;
+use std::io::{BufWriter, Write};
+use std::path::{PathBuf, absolute};
 use std::error::Error;
 
 use wallpaper;
 use rand;
-use serde_json::{Result, Value};
+use serde_json::{Value, json};
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
     let mut app = App::new();
-    app.run();
+    app.run()?;
+    Ok(())
 }
 
 struct App {
@@ -27,12 +31,16 @@ impl App {
 
     pub fn new() -> Self {
         Self {
-            // jsonからディレクトリパスを取得
             dir_path: PathBuf::from("C:\\Users\\norder\\Documents\\Images\\Nord\\"),
         }
     }
 
     pub fn run(&mut self) -> Result<(), Box<dyn Error>> {
+
+        // dir_pathをjsonから取得
+        self.read_dir_path_from_json()?;
+
+
         // コマンドライン引数から受け取り
         let args: Vec<String> = env::args().collect();
 
@@ -56,6 +64,40 @@ impl App {
 
     }
 
+    // jsonからディレクトリパスを取得
+    fn read_dir_path_from_json(&mut self) -> Result<(), Box<dyn Error>> {
+        let file = File::open(".\\data\\data.json")?;
+        let reader = BufReader::new(file);
+
+        // データからValueを取得
+        let json_value: Value = serde_json::from_reader(reader)?;
+
+        // dir_pathを取得
+        let dir_path: Option<&str> = json_value["dir_path"].as_str();
+
+        // Noneではなかったら
+        if let Some(dir_path) = dir_path {
+            // dir_pathを設定
+            self.dir_path = PathBuf::from(dir_path);
+        } else {
+            return Err("Json File Data Is Broken.".into());
+        }
+
+        Ok(())
+    }
+
+    // jsonにディレクトリパスを書き込み
+    fn write_dir_path_to_json(&self, dir_path: &str) -> Result<(), Box<dyn Error>> {
+        let json_data = json!({
+            "dir_path": dir_path
+        });
+
+        let mut file = File::create(".\\data\\data.json")?;
+        file.write_all(json_data.to_string().as_bytes())?;
+
+        Ok(())
+    }
+
     // ディレクトリパスを表示
     fn get_dir_path(&self) {
         println!("directory path: {:?}", self.dir_path);
@@ -63,13 +105,15 @@ impl App {
 
     // ディレクトリパスを設定
     fn set_dir_path(&mut self, dir_path: &str) -> Result<(), Box<dyn Error>> {
-        let path = PathBuf::from(dir_path);
+        let path = PathBuf::from(&dir_path);
 
         if !path.is_dir() {
             return Err("Directory Is Not Found.".into());
         }
 
         self.dir_path = path;
+
+        self.write_dir_path_to_json(dir_path)?;
 
         Ok(())
     }
