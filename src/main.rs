@@ -6,6 +6,7 @@ use std::error::Error;
 
 use wallpaper;
 use rand;
+use serde_json::{Result, Value};
 
 fn main() {
     let mut app = App::new();
