@@ -9,7 +9,6 @@
 ### 2.1. システム環境
 
 OS: Windows11  
-Terminal: Wezterm  
 
 ### 2.2. 依存環境
 
