@@ -46,8 +46,3 @@ wallpaper random
 wallpaper help
 ```
 
-```shell
-wallpaper
-```
-
-
